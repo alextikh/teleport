@@ -37,9 +37,14 @@ public class Transfer
         return transferTracker.postBegin(receiver);
     }
 
-    public HttpResponse endTransfer(String receiver) throws IOException
+    public HttpResponse notPassTransfer(String idConnection) throws IOException
     {
-        return transferTracker.postEnd(receiver);
+        return transferTracker.postNotPass(idConnection);
+    }
+
+    public HttpResponse endTransfer(String idConnection) throws IOException
+    {
+        return transferTracker.postEnd(idConnection);
     }
 
     public HttpResponse getTransfers() throws IOException
@@ -62,6 +67,20 @@ public class Transfer
             map.put("user", receiver);
             map.put("action", "begin");
             JSONObject sendData = new JSONObject(map);
+            HttpPost request = new HttpPost(SERVER_URL);
+            request.addHeader("Authorization", authorizationHandler.getToken());
+            request.setHeader("Content-Type", "application/json");
+            StringEntity params = new StringEntity(sendData.toJSONString());
+            request.setEntity(params);
+            return httpClient.execute(request);
+        }
+
+        public HttpResponse postEnd(String idConnection) throws IOException
+        {
+            Map<String, String> map = new HashMap<>();
+            map.put("id", idConnection);
+            map.put("action", "end");
+            JSONObject sendData = new JSONObject(map);
 
             HttpPost request = new HttpPost(SERVER_URL);
             request.addHeader("Authorization", authorizationHandler.getToken());
@@ -71,11 +90,11 @@ public class Transfer
             return httpClient.execute(request);
         }
 
-        public HttpResponse postEnd(String receiver) throws IOException
+        public HttpResponse postNotPass(String idConnection) throws IOException
         {
             Map<String, String> map = new HashMap<>();
-            map.put("user", receiver);
-            map.put("action", "end");
+            map.put("id", idConnection);
+            map.put("action", "not_pass");
             JSONObject sendData = new JSONObject(map);
 
             HttpPost request = new HttpPost(SERVER_URL);
@@ -113,6 +132,7 @@ public class Transfer
             request.setHeader("Content-Type", "application/json");
             StringEntity params = new StringEntity(sendData.toJSONString());
             request.setEntity(params);
+            //here the problem.
             return httpClient.execute(request);
         }
     }

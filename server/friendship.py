@@ -3,6 +3,29 @@ import falcon
 from db_accessor import *
 
 
+class RemoveFriendship(object):
+    def __init__(self):
+        self.db = get_friendship_db()
+
+    def on_post(self, req, resp):
+        userdata = json.loads(req.stream.read())
+        user = req.get_header('Authorization')
+        # update ip address in DB
+        ip = req.env['REMOTE_ADDR']
+        if User().get_user_ip(user) != ip:
+            User().set_user_ip(user, ip)
+
+        remove = userdata['remove']
+        if self.db.remove_friendship(user, remove):
+            status = 'success'
+        else:
+            status = 'failure'
+
+        resp.body = '{"status": "%s"}' % status
+        resp.content_type = 'application/json'
+        resp.status = falcon.HTTP_201
+
+
 class Friendship(object):
     def __init__(self):
         self.db = get_friend_request_db()
@@ -11,6 +34,11 @@ class Friendship(object):
     def on_post(self, req, resp):
         userdata = json.loads(req.stream.read())
         sender = req.get_header('Authorization')
+        # update ip address in DB
+        ip = req.env['REMOTE_ADDR']
+        if User().get_user_ip(sender) != ip:
+            User().set_user_ip(sender, ip)
+
         reply = userdata['reply']
 
         if self.db.send_friend_request(sender, reply):
@@ -24,6 +52,11 @@ class Friendship(object):
 
     def on_get(self, req, resp):
         reply = req.get_header('Authorization')
+        # update ip address in DB
+        ip = req.env['REMOTE_ADDR']
+        if User().get_user_ip(reply) != ip:
+            User().set_user_ip(reply, ip)
+
         friends = self.dbf.get_friends_list(reply)
         resp.body = json.dumps(friends)
         resp.content_type = 'application/json'
@@ -37,6 +70,11 @@ class FriendshipResponse(object):
     def on_post(self, req, resp):
         userdata = json.loads(req.stream.read())
         sender = req.get_header('Authorization')
+        # update ip address in DB
+        ip = req.env['REMOTE_ADDR']
+        if User().get_user_ip(sender) != ip:
+            User().set_user_ip(sender, ip)
+
         reply = userdata['reply']
         request_status = userdata['status']
 
@@ -60,6 +98,11 @@ class FriendshipResponse(object):
 
     def on_get(self, req, resp):
         reply = req.get_header('Authorization')
+        # update ip address in DB
+        ip = req.env['REMOTE_ADDR']
+        if User().get_user_ip(reply) != ip:
+            User().set_user_ip(reply, ip)
+
         incoming = self.db.check_incoming_request(reply)
         outgoing = self.db.check_outgoing_request(reply)
         resp.body = json.dumps({"incoming": incoming, "outgoing": outgoing})
@@ -73,7 +116,13 @@ class Username(object):
 
     def on_post(self, req, resp):
         userdata = json.loads(req.stream.read())
-        usernames = self.db.username_like(userdata['name'])
+        reply = req.get_header('Authorization')
+        # update ip address in DB
+        ip = req.env['REMOTE_ADDR']
+        if User().get_user_ip(reply) != ip:
+            User().set_user_ip(reply, ip)
+
+        usernames = self.db.username_like(userdata['name'], reply)
         resp.body = json.dumps(usernames)
         resp.content_type = 'application/json'
         resp.status = falcon.HTTP_201

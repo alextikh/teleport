@@ -1,7 +1,6 @@
 package com.teleport.client;
 
 import org.json.simple.parser.ParseException;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +26,7 @@ public class FriendshipQuerier implements Runnable
         }
         catch (IOException e)
         {
-            System.out.println(e.getMessage());
+            e.getMessage();
         }
     }
 
@@ -47,11 +46,11 @@ public class FriendshipQuerier implements Runnable
                     System.out.println("New incoming requests: " + newIncoming);
                 }
                 outgoing = client.getOutgoingFriendRequests();
-                Thread.sleep(delay);
+                Thread.sleep(20000);
             }
             catch (IOException | ParseException | InterruptedException e)
             {
-                System.out.println(e.getMessage());
+                e.getMessage();
             }
         }
     }

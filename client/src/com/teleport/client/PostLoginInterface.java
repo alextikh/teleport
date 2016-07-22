@@ -1,99 +1,114 @@
 package com.teleport.client;
 
-import asg.cliche.Command;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.text.Text;
 import org.json.simple.parser.ParseException;
-
 import java.io.IOException;
 import java.util.*;
 
 public class PostLoginInterface
 {
-    private static final String friendshipQuerierThreadName = "FriendshipQuerierThread";
-    private static final String transferQuerierThreadName = "TransferQuerierThread";
+    //private static final String friendshipQuerierThreadName = "FriendshipQuerierThread";
 
     private Client client;
-    private FriendshipQuerier friendshipQuerier;
-    private TransferQuerier transferQuerier;
+    //private FriendshipQuerier friendshipQuerier;
 
     public PostLoginInterface() throws IOException
     {
         client = new Client();
-        friendshipQuerier = new FriendshipQuerier(friendshipQuerierThreadName);
-        friendshipQuerier.start();
-        transferQuerier = new TransferQuerier(transferQuerierThreadName);
-        transferQuerier.start();
+       // friendshipQuerier = new FriendshipQuerier(friendshipQuerierThreadName);
+        //friendshipQuerier.start();
     }
 
-    @Command
-    public void getFriendRequests() throws IOException, ParseException
+    public Client getClient()
     {
-        List<String> incoming = client.getIncomingFriendRequests();
-        List<String> outgoing = client.getOutgoingFriendRequests();
-        System.out.println("incoming: " + incoming);
-        System.out.println("outgoing: " + outgoing);
+        return client;
     }
 
-    @Command
-    public void addFriend(String friend) throws IOException, ParseException
+    public String removeFriend(String remove) throws IOException, ParseException
+    {
+        if (client.removeFriend(remove))
+        {
+            return "Request sent";
+        }
+        else
+        {
+            return "Couldn't send request";
+        }
+    }
+
+    public String addFriend(String friend) throws IOException, ParseException
     {
         if (client.addFriend(friend))
         {
-            System.out.println("Request sent");
+            return "Request sent";
         }
         else
         {
-            System.out.println("Couldn't send request");
+            return "Couldn't send request";
         }
     }
 
-    @Command
-    public void respondToRequest(String friend, boolean status) throws IOException, ParseException
+    public String respondToRequest(String friend, boolean status) throws IOException, ParseException
     {
         if (client.respondToRequest(friend, status))
         {
-            System.out.println("Responded successfully");
+            return "Responded successfully";
         }
         else
         {
-            System.out.println("Couldn't respond");
+            return "Couldn't respond";
         }
     }
 
-    @Command
-    public void getFriends() throws IOException, ParseException
+    public boolean logout() throws IOException, ParseException
     {
-        List<String> friends = client.getFriends();
-        friends.forEach(System.out::println);
-    }
-
-    @Command
-    public void send(String receiver, String... paths) throws IOException, ParseException
-    {
-        List<String> p = new ArrayList<>();
-        for (String path : paths)
+        if (client.logout())
         {
-            p.add(path);
-        }
-        if (client.sendFile(receiver, p))
-        {
-            System.out.println("Success");
+            return true;
         }
         else
         {
-            System.out.println("Failure");
+            return false;
         }
     }
 
-    @Command
-    public void receive(String sender) throws IOException, ParseException
+    public List<String> getFriends() throws IOException, ParseException
     {
-        if (client.recvFile(sender))
+        return client.getFriends();
+    }
+
+    public List<String> getNotPassTransfers() throws IOException, ParseException
+    {
+        return client.getNotPassTransfers();
+    }
+
+    public List<String> getUsername(String name) throws IOException, ParseException
+    {
+        return client.getUsernameList(name);
+    }
+
+    public String send(String receiver, ProgressBar progressBar, Text lbl, List<String> paths) throws IOException, ParseException
+    {
+        if (client.sendFile(receiver, progressBar, lbl, paths))
         {
-            System.out.println("Success");
+            return "Send success";
         }
         else
         {
-            System.out.println("Failure");
+            return "Send failure";
+        }
+    }
+
+    public String receive(String sender, ProgressBar pbBar, Text lbl) throws IOException, ParseException
+    {
+        if (client.recvFile(sender, pbBar, lbl))
+        {
+            return "Success";
+        }
+        else
+        {
+            return "Failure";
         }
     }
 }
